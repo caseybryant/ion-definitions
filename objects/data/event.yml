@@ -13,9 +13,11 @@ Event:
   sub_type: ""      # A specialization of the event_type expressed by this object type (or empty)
   actor_id: ""      # The actor ID requesting the action causing the event
   persisted_version: 1 # The last version in which the event instance was saved (persisted)
+---
 
 # Object containing additional computed information about one Event
 EventComputedAttributes:
+  event: !Event           # The actual event object or None
   event_id: ""            # The event id of the described Event
   ts_computed: ""         # Timestamp when event attributes were computed
   event_summary: ""       # A summary str describing event based on type and core attributes
@@ -135,6 +137,16 @@ ResourceAgentAsyncResultEvent: !Extends_ResourceAgentEvent
   desc: ""
   result: ""
 
+ResourceAgentExecutionStatus: !enum (values=(OK, FAILED), default=OK)
+
+---
+
+ResourceAgentLifecycleEvent: !Extends_ResourceAgentEvent
+  # sub_types: STARTED, STOPPED
+  process_id: ""
+  agent_state: ""
+  execution_status: !ResourceAgentExecutionStatus
+
 ---
 
 # ------------------------------------------------------------------------------------
@@ -213,6 +225,24 @@ DeviceAggregateStatusEvent: !Extends_DeviceStatusEvent
   prev_status: !DeviceStatusType
   roll_up_status: False
 
+# ------------------------------------------------------------------------------------
+# Mission events.
+# Events about the status of mission plan execution
+# ------------------------------------------------------------------------------------
+
+DeviceMissionEvent: !Extends_DeviceEvent
+  mission_id: ""  # the resource id of the mission
+
+MissionExecutionStatus: !enum (values=(OK, ABORTED, KILLED, FAILED), default=OK)
+
+---
+
+MissionLifecycleEvent: !Extends_DeviceMissionEvent
+  # sub_type: STARTED, STOPPED
+  # origin: device id (platform resource id)
+  mission_thread_id: ""   # If not empty, ID of particular mission thread
+  execution_status: !MissionExecutionStatus
+
 
 # ------------------------------------------------------------------------------------
 # Information Content Events
@@ -269,6 +299,7 @@ DataProcessStatusType: !enum (values=(NORMAL, ERROR, OFFLINE), default=NORMAL)
 # To be used by transforms monitoring the health of data producers to report the status of the producers
 DataProcessStatusEvent: !Extends_DataProcessEvent
   status: !DataProcessStatusType
+  values: []
 
 
 
@@ -528,8 +559,48 @@ ExternalReferencesUpdatedEvent: !Extends_InformationContentModifiedEvent
 
 ---
 
-ParameterQCEvent: !Extends_Event
+DatasetCalibrationEvent: !Extends_DatasetModified
+  calibrations: []
+
+---
+
+#  Events published in the context of data processing
+DataProcessingEvent: !Extends_Event
+
+---
+
+# Events published in a Quality Control context
+DataQCEvent: !Extends_DataProcessingEvent
+
+---
+
+# Published when:
+#   - QC Lookup tables are changed
+#   - User driven QC re-evaluation
+#   - System is re-deployed with new QC algorithms
+# The QC Processor should re-evaluate applicable QCs for data products associated
+# with the reference designator
+# origin is the reference designator
+ResetQCEvent: !Extends_DataQCEvent
+  # origin is the reference_designator
+
+# Published when:
+#   - QC Processing detects a failure in the vector of parameter values
+ParameterQCEvent: !Extends_DataQCEvent
   # Origin is the dataset
   qc_parameter:   ""
   temporal_values: []
   configuration:  {}
+
+---
+# Events generated in the context of NotificationRequest handling
+NotificationEvent: !Extends_Event
+
+---
+
+# Event generated when a NotificationRequest has resulted in message(s) being sent
+NotificationSentEvent: !Extends_NotificationEvent
+  user_id: ""
+  notification_id: ""
+  notification_max: 0
+

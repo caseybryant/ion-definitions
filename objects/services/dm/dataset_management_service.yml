@@ -14,16 +14,9 @@ methods:
 
   create_dataset:
     in:
-      name:                    ""
-      datastore_name:          ""
-      view_name:               ""
-      stream_id:               ""
-      parameter_dict:          {}
-      spatial_domain:          {}
-      temporal_domain:         {}
+      dataset: !Dataset
+      parameter_dict: {}
       parameter_dictionary_id: ""
-      description:             ""
-      parent_dataset_id:       ""
     out:
       dataset_id:              ""
 
@@ -57,6 +50,18 @@ methods:
     out:
     throws:
       NotFound: if dataset does not exist
+
+  add_dataset_window_to_complex:
+    docstring: |
+      Updates a complex coverage to include a new reference to a device dataset with a window.
+    in:
+      device_dataset_id: ""
+      window: []
+      site_dataset_id: ""
+    out:
+    throws:
+      NotFound: if site dataset doesn't exist
+
 #--------
 
   add_parameter_to_dataset:
@@ -368,4 +373,12 @@ methods:
     out:
       values: {}
 
+#--------
+  read_qc_table:
+    docstring: |
+      Reads an object containing uploaded QC tables from the object store
+    in:
+      obj_id: ""
+    out:
+      obj_dictionary: {}
 

@@ -11,6 +11,20 @@ ExternalArchive:
   # The contact information for the archive POC.
   archive_contact: !ContactInformation
 
+---
+
+DataProductTypeEnum: !enum (values=(SITE, DEVICE, EXTERNAL, DERIVED), default=DEVICE)
+
+---
+
+# Represents a temporal window of a Dataset
+DatasetWindow:
+    # Beginning and End of data window
+    bounds: !TemporalBounds
+    # ID of the dataset which the time window applies.  Yes, storing an ID here.
+    dataset_id: ""
+    # Arbitrary set of key-value attributes
+    attributes: {}
 
 ---
 
@@ -22,7 +36,7 @@ DataProduct: !Extends_InformationResource
   # Indicates the authority that is issuing the IDs, so that people with the product can know how/where to look up the ID.
   # It will indicate the OOI identity in some way (may indicate each Org as they issue their own resource IDs)
   naming_authority_id: ""
-  
+
   # All entities that serves as a contact point for this data product as a list of ContactInformation objects.
   #@ContentType=ContactInformation
   contacts: []
@@ -41,12 +55,6 @@ DataProduct: !Extends_InformationResource
   # A nominal representation of the temporal span of when the observations within the data product were actually made.
   # For instruments that are not real-time, this will not be the same as the earliest and latest ingestion of data.
   nominal_datetime: !TemporalBounds
-
-  # (SYS) Describes the temporal domain used to represent the data product's coverage.
-  temporal_domain: {}
-
-  # (SYS) Describes the spatial domain used to represent the data product's coverage.
-  spatial_domain: {}
 
   # A list of keyword/authority pairs with optional urls as list of Term objects.
   #@ContentType=Term
@@ -104,6 +112,12 @@ DataProduct: !Extends_InformationResource
 
   # Whether the Trend Test (TRNDTST) QC is run on this data product. Codelist: applicable, not applicable, TBD
   qc_trndtst: ""
+
+  # Dictionary describing which parameters have qc enabled.
+  #{ "TEMPWAT_L1": ["qc_glblrng", "qc_gradtst"],
+  #  "DENSITY_L2": ["qc_glblrng"] }
+  # 
+  qc_applications: {}
 
   # The OOI document control number (DCN) for this data product's Data Processing Specification.
   # Comma-separated list when multiple values are present.
@@ -186,6 +200,13 @@ DataProduct: !Extends_InformationResource
   # Describes user entered changes to this data product over time.
   # This is in addition to the event history of life cycle state changes, resource changes and other events.
   lineage_description: ""
+
+  # Defines each Dataset Window for a Site DataProduct
+  #@ContentType=DatasetWindow
+  dataset_windows: []
+
+  # Defines if the DataProduct is from a Site or Device
+  category: !DataProductTypeEnum
 
 ---
 # (UNUSED) Represents a version or variant of a data product.
